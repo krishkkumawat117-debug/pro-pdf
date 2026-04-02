@@ -14,8 +14,8 @@ const port = 3001;
 
 // Razorpay configuration
 const razorpay = new Razorpay({
-    key_id: 'rzp_test_your_key_id', // Replace with your Razorpay Key ID
-    key_secret: 'your_secret_key' // Replace with your Razorpay Secret Key
+    key_id: 'rzp_test_SYYTT09L3lVFMt', // Your Razorpay Key ID
+    key_secret: 'tddobKvoxUbIH6xBeylG1Jv8' // Your Razorpay Secret Key
 });
 
 // Subscription plans
