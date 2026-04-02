@@ -1,6 +1,6 @@
-# PDF Tools Suite - Complete PDF Manipulation App
+# PDF Tools Suite - Free PDF Manipulation App
 
-A comprehensive Node.js web application for PDF manipulation with subscription-based monetization. Now available as a Progressive Web App (PWA) that can be installed on Android devices!
+A comprehensive Node.js web application for PDF manipulation. Now available as a Progressive Web App (PWA) that can be installed on Android devices!
 
 ## ✨ Features
 
@@ -13,9 +13,8 @@ A comprehensive Node.js web application for PDF manipulation with subscription-b
 - 🔄 **Rotate Pages** - Rotate PDF pages
 - 🗑️ **Remove Pages** - Remove specific pages
 - 📄 **Add Page Numbers** - Add page numbers to PDFs
-- 👑 **Premium Features** - Subscription-based access
-- 💳 **Razorpay Integration** - Real payment processing
 - 📱 **PWA Support** - Install on Android devices
+- 🎨 **Material Design** - Modern Android-style interface
 
 ## 🚀 Installation
 
@@ -56,17 +55,6 @@ deploy.bat   # Windows
 3. Tap the menu (⋮) → **"Add to Home screen"**
 4. Tap **"Add"** to install
 
-#### Step 3: Configure Payments (Optional)
-1. Sign up at [razorpay.com](https://razorpay.com)
-2. Get your API keys from the dashboard
-3. Update `server.js` with real Razorpay keys:
-   ```javascript
-   const razorpay = new Razorpay({
-       key_id: 'rzp_live_your_key_id',
-       key_secret: 'your_secret_key'
-   });
-   ```
-
 ## 📋 Usage
 
 ### Web Version
@@ -85,7 +73,6 @@ deploy.bat   # Windows
 - **Backend**: Node.js, Express.js
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
 - **PDF Processing**: PDF-lib, PDFKit, Sharp
-- **Payments**: Razorpay Integration
 - **PWA**: Service Worker, Web App Manifest
 - **UI**: Material Design inspired
 
@@ -111,7 +98,8 @@ npm run deploy # Deploy to Vercel
 ├── server.js           # Express server & API routes
 ├── public/             # Static web files
 │   ├── index.html      # Main application
-│   ├── subscription.html # Payment page
+│   ├── admin-login.html # Admin login page
+│   ├── admin.html      # Admin panel
 │   ├── style.css       # Stylesheets
 │   ├── manifest.json   # PWA manifest
 │   └── sw.js          # Service worker
@@ -131,10 +119,6 @@ npm run deploy # Deploy to Vercel
 - `POST /rotate-pdf` - Rotate pages
 - `POST /remove-pages` - Remove pages
 - `POST /add-numbers` - Add page numbers
-- `POST /api/create-order` - Create payment order
-- `POST /api/verify-payment` - Verify payment
-- `GET /api/subscription-plans` - Get plans
-- `GET /api/user/:id/subscription` - Get user subscription
 
 ## 🤝 Contributing
 

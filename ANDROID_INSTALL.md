@@ -42,21 +42,6 @@ First, you need to deploy your app to a web server so it can be accessed from mo
 4. **Select "Add to Home screen"**
 5. **Tap "Add"** to install the app
 
-### Step 3: Configure Razorpay (For Real Payments)
-
-1. Go to [razorpay.com](https://razorpay.com) and create an account
-2. Get your API Key ID and Secret Key from the Dashboard
-3. Update `server.js`:
-   ```javascript
-   const razorpay = new Razorpay({
-       key_id: 'rzp_live_your_actual_key_id', // Replace with real key
-       key_secret: 'your_actual_secret_key'    // Replace with real secret
-   });
-   ```
-4. Update `subscription.html`:
-   ```javascript
-   key: 'rzp_live_your_actual_key_id', // Replace with real key
-   ```
 
 ### Features Available in Android App:
 
@@ -64,12 +49,11 @@ First, you need to deploy your app to a web server so it can be accessed from mo
 ✅ **Native App Experience** - Installs like a regular Android app
 ✅ **Push Notifications Ready** - Can be extended for notifications
 ✅ **Responsive Design** - Optimized for mobile screens
-✅ **Real Payments** - Razorpay integration for subscriptions
+✅ **Free PDF Tools** - All PDF manipulation tools available for free
 
 ### Troubleshooting:
 
 - **App won't install?** Make sure you're using Chrome browser
-- **Payment not working?** Check that you've updated the Razorpay keys
 - **App is slow?** The first load caches resources for offline use
 
 ### Development:

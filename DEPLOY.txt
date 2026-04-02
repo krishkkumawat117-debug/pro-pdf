@@ -49,7 +49,6 @@ TEST YOUR DEPLOYMENT
 ===================
 - Visit your URL in browser
 - Try the PDF tools
-- Test subscription page
 - Check if PWA install prompt appears
 
 PROBLEM SOLVING
@@ -61,8 +60,7 @@ PROBLEM SOLVING
 
 Your app includes:
 ✅ PWA support for Android installation
-✅ Razorpay payment integration
-✅ All PDF tools working
+✅ All PDF tools working for free
 ✅ Responsive design
 ✅ Offline caching
 

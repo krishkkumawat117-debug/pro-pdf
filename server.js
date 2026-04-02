@@ -7,24 +7,9 @@ const path = require('path');
 const { PDFDocument: PDFLibDocument, rgb } = require('pdf-lib');
 const { createWorker } = require('tesseract.js');
 const session = require('express-session');
-const Razorpay = require('razorpay');
 
 const app = express();
 const port = 3001;
-
-// Razorpay configuration
-const razorpay = new Razorpay({
-    key_id: 'rzp_test_SYYTT09L3lVFMt', // Your Razorpay Key ID
-    key_secret: 'tddobKvoxUbIH6xBeylG1Jv8' // Your Razorpay Secret Key
-});
-
-// Subscription plans
-const SUBSCRIPTION_PLANS = {
-    weekly: { price: 200, name: 'Weekly Plan', duration: 7 },
-    monthly: { price: 500, name: 'Monthly Plan', duration: 30 },
-    yearly: { price: 5000, name: 'Yearly Plan', duration: 365 },
-    permanent: { price: 10000, name: 'Permanent Plan', duration: -1 }
-};
 
 // Admin configuration
 const ADMIN_PASSWORD = 'admin123'; // Change this in production
@@ -391,8 +376,6 @@ app.post('/auth/google', (req, res) => {
         id: Date.now().toString(),
         name: 'Demo User',
         email: 'demo@gmail.com',
-        subscription: 'free',
-        paymentHistory: [],
         loginTime: new Date().toISOString()
     };
 
@@ -411,150 +394,6 @@ app.post('/auth/google', (req, res) => {
     res.json({ success: true, user: mockUser });
 });
 
-// Payment Routes
-app.post('/api/create-order', (req, res) => {
-    const { plan, userId } = req.body;
-
-    if (!SUBSCRIPTION_PLANS[plan]) {
-        return res.status(400).json({ error: 'Invalid subscription plan' });
-    }
-
-    const planDetails = SUBSCRIPTION_PLANS[plan];
-    const amount = planDetails.price * 100; // Razorpay expects amount in paisa
-
-    const options = {
-        amount: amount,
-        currency: 'INR',
-        receipt: `receipt_${userId}_${Date.now()}`,
-        notes: {
-            userId: userId,
-            plan: plan,
-            planName: planDetails.name
-        }
-    };
-
-    razorpay.orders.create(options, (err, order) => {
-        if (err) {
-            console.error('Error creating order:', err);
-            return res.status(500).json({ error: 'Failed to create payment order' });
-        }
-
-        res.json({
-            orderId: order.id,
-            amount: order.amount,
-            currency: order.currency,
-            plan: plan,
-            planName: planDetails.name
-        });
-    });
-});
-
-app.post('/api/verify-payment', (req, res) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, userId, plan } = req.body;
-
-    // Verify payment signature
-    const sign = razorpay_order_id + '|' + razorpay_payment_id;
-    const expectedSign = require('crypto')
-        .createHmac('sha256', razorpay.key_secret)
-        .update(sign.toString())
-        .digest('hex');
-
-    if (razorpay_signature === expectedSign) {
-        // Payment verified successfully
-        try {
-            const users = JSON.parse(fs.readFileSync(USERS_DATA_FILE, 'utf8'));
-            const userIndex = users.findIndex(u => u.id === userId);
-
-            if (userIndex !== -1) {
-                // Update user subscription
-                users[userIndex].subscription = plan;
-                users[userIndex].status = 'active';
-
-                // Add payment to history
-                const paymentRecord = {
-                    paymentId: razorpay_payment_id,
-                    orderId: razorpay_order_id,
-                    plan: plan,
-                    amount: SUBSCRIPTION_PLANS[plan].price,
-                    currency: 'INR',
-                    date: new Date().toISOString(),
-                    status: 'completed'
-                };
-
-                if (!users[userIndex].paymentHistory) {
-                    users[userIndex].paymentHistory = [];
-                }
-                users[userIndex].paymentHistory.push(paymentRecord);
-
-                // Set subscription expiry (except for permanent)
-                if (plan !== 'permanent') {
-                    const expiryDate = new Date();
-                    expiryDate.setDate(expiryDate.getDate() + SUBSCRIPTION_PLANS[plan].duration);
-                    users[userIndex].subscriptionExpiry = expiryDate.toISOString();
-                } else {
-                    users[userIndex].subscriptionExpiry = null; // Never expires
-                }
-
-                users[userIndex].updatedAt = new Date().toISOString();
-
-                fs.writeFileSync(USERS_DATA_FILE, JSON.stringify(users, null, 2));
-
-                res.json({
-                    success: true,
-                    message: 'Payment verified and subscription updated',
-                    user: users[userIndex]
-                });
-            } else {
-                res.status(404).json({ error: 'User not found' });
-            }
-        } catch (error) {
-            console.error('Error updating user:', error);
-            res.status(500).json({ error: 'Failed to update user subscription' });
-        }
-    } else {
-        res.status(400).json({ error: 'Payment verification failed' });
-    }
-});
-
-// Get subscription plans
-app.get('/api/subscription-plans', (req, res) => {
-    res.json(SUBSCRIPTION_PLANS);
-});
-
-// Check subscription status
-app.get('/api/user/:userId/subscription', (req, res) => {
-    try {
-        const users = JSON.parse(fs.readFileSync(USERS_DATA_FILE, 'utf8'));
-        const user = users.find(u => u.id === req.params.userId);
-
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        const now = new Date();
-        const expiryDate = user.subscriptionExpiry ? new Date(user.subscriptionExpiry) : null;
-
-        let isActive = user.subscription !== 'free';
-        if (expiryDate && now > expiryDate) {
-            isActive = false;
-            // Optionally update user status to inactive
-            user.status = 'inactive';
-            fs.writeFileSync(USERS_DATA_FILE, JSON.stringify(users, null, 2));
-        }
-
-        res.json({
-            subscription: user.subscription || 'free',
-            status: user.status || 'active',
-            isActive: isActive,
-            expiryDate: user.subscriptionExpiry,
-            paymentHistory: user.paymentHistory || []
-        });
-    } catch (error) {
-        console.error('Error checking subscription:', error);
-        res.status(500).json({ error: 'Failed to check subscription status' });
-    }
-});
-
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`PDF Tools server running at http://localhost:${port}`);
 });
